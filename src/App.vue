@@ -409,52 +409,60 @@ export default {
           var width = Math.max(x, startX) - left;
           var height = Math.max(y, startY) - top;
 
-          html2canvas(document.body).then(function (canvas) {
-            //전체 화면 캡쳐
-            var img = canvas
-              .getContext("2d")
-              .getImageData(left, top, width, height);
-            var c = document.createElement("canvas");
-            var ctx = c.getContext("2d");
+          html2canvas(document.body, { scale: window.devicePixelRatio }).then(
+            function (canvas) {
+              //전체 화면 캡쳐
+              var scale = window.devicePixelRatio;
+              var img = canvas
+                .getContext("2d")
+                .getImageData(
+                  left * scale,
+                  top * scale,
+                  width * scale,
+                  height * scale
+                );
+              var c = document.createElement("canvas");
+              var ctx = c.getContext("2d");
 
-            c.width = width;
-            c.height = height;
+              c.width = width;
+              c.height = height;
 
-            c.getContext("2d").putImageData(img, 0, 0);
-            //save(c);
+              c.getContext("2d").putImageData(img, 0, 0);
+              //save(c);
 
-            // gray scale 시작
-            var dataURL = c.toDataURL("image/jpeg");
+              // gray scale 시작
+              var dataURL = c.toDataURL("image/jpeg");
 
-            var grayscaleCanvas = document.createElement("canvas");
-            var grayscaleCtx = grayscaleCanvas.getContext("2d");
+              var grayscaleCanvas = document.createElement("canvas");
+              var grayscaleCtx = grayscaleCanvas.getContext("2d");
 
-            grayscaleCanvas.width = width;
-            grayscaleCanvas.height = height;
+              grayscaleCanvas.width = width;
+              grayscaleCanvas.height = height;
 
-            var imgElement = new Image();
-            imgElement.onload = function () {
-              grayscaleCtx.drawImage(imgElement, 0, 0);
-              var imgData = grayscaleCtx.getImageData(
-                0,
-                0,
-                grayscaleCanvas.width,
-                grayscaleCanvas.height
-              ); //*************
-              var data = imgData.data;
-              for (var i = 0; i < data.length; i += 4) {
-                var grayscale =
-                  data[i] * 0.3 + data[i + 1] * 0.59 + data[i + 2] * 0.11; //*************
-                data[i] = grayscale; // red
-                data[i + 1] = grayscale; // green
-                data[i + 2] = grayscale; // blue
-              }
-              grayscaleCtx.putImageData(imgData, 0, 0);
-              save(grayscaleCanvas);
-            };
-            imgElement.src = dataURL;
-            // gray scale 끝
-          });
+              var imgElement = new Image();
+              imgElement.onload = function () {
+                grayscaleCtx.drawImage(imgElement, 0, 0);
+                var imgData = grayscaleCtx.getImageData(
+                  0,
+                  0,
+                  grayscaleCanvas.width,
+                  grayscaleCanvas.height
+                ); //*************
+                var data = imgData.data;
+                for (var i = 0; i < data.length; i += 4) {
+                  var grayscale =
+                    data[i] * 0.3 + data[i + 1] * 0.59 + data[i + 2] * 0.11; //*************
+                  data[i] = grayscale; // red
+                  data[i + 1] = grayscale; // green
+                  data[i + 2] = grayscale; // blue
+                }
+                grayscaleCtx.putImageData(imgData, 0, 0);
+                save(grayscaleCanvas);
+              };
+              imgElement.src = dataURL;
+              // gray scale 끝
+            }
+          );
           body.removeEventListener("mouseup", mouseup);
           // 마우스 커서 기본으로 변경
           document.querySelector("body").classList.remove("edit_cursor");
